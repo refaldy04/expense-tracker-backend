@@ -64,7 +64,7 @@ await server.start();
 app.use(
   "/graphql",
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://expense-tracker-frontend-jade.vercel.app",
     credentials: true,
   }),
   express.json(),
