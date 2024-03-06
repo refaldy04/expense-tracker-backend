@@ -1,5 +1,5 @@
-import { users } from "../dummyData/data.js";
 import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
 
 const userResolver = {
   Mutation: {
@@ -10,7 +10,7 @@ const userResolver = {
         if (!username || !name || !password || !gender) {
           throw new Error("All fields are required");
         }
-        const existingUser = User.findOne({ username });
+        const existingUser = await User.findOne({ username });
         if (existingUser) {
           throw new Error("User already exists");
         }
@@ -41,6 +41,7 @@ const userResolver = {
     login: async (_, { input }, context) => {
       try {
         const { username, password } = input;
+        if (!username || !password) throw new Error("All fields are required");
         const { user } = await context.authenticate("graphql-local", {
           username,
           password,
@@ -54,13 +55,13 @@ const userResolver = {
       }
     },
 
-    logout: async (_, __, { req, res }) => {
+    logout: async (_, __, context) => {
       try {
         await context.logout();
-        req.session.destroy((err) => {
+        context.req.session.destroy((err) => {
           if (err) throw err;
         });
-        res.clearCookie("connect.sid");
+        context.res.clearCookie("connect.sid");
 
         return { message: "Logged out successfully" };
       } catch (err) {
